@@ -1,0 +1,58 @@
+{
+ "rows_raw": 2698,
+ "dtypes_before": "{'date': 'object', 'close': 'float64'}",
+ "missing_values": 0,
+ "duplicate_dates": 0,
+ "gaps_over_5_days": 0,
+ "max_gap_days": 5,
+ "outliers_|z|>4": 13,
+ "rows_clean": 2638,
+ "columns_after_encoding": [
+  "close",
+  "ret",
+  "ret_clipped",
+  "ma20",
+  "vol20",
+  "mom60",
+  "month",
+  "weekday_Monday",
+  "weekday_Thursday",
+  "weekday_Tuesday",
+  "weekday_Wednesday",
+  "regime_low_vol"
+ ],
+ "scaled_mean_std": [
+  0.0,
+  1.0
+ ],
+ "minmax_range": [
+  0.0,
+  1.0
+ ],
+ "close_summary": {
+  "count": 2638.0,
+  "mean": 5560.3,
+  "std": 3157.0,
+  "min": 1495.6,
+  "25%": 2944.0,
+  "50%": 5030.8,
+  "75%": 7925.7,
+  "max": 13718.3
+ },
+ "ann_return_%": 19.1,
+ "ann_vol_%": 27.9,
+ "worst_day_%": -11.6,
+ "best_day_%": 9.8,
+ "corr_ret_vs_mom60": 0.116,
+ "avg_ret_by_weekday_%": {
+  "Friday": -0.012,
+  "Monday": -0.024,
+  "Thursday": 0.07,
+  "Tuesday": 0.196,
+  "Wednesday": 0.145
+ },
+ "avg_ret_by_regime_%": {
+  "high_vol": 0.091,
+  "low_vol": 0.061
+ }
+}
