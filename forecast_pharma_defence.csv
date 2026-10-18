@@ -1,0 +1,3 @@
+Index,Data,Current,Best_model,Dec2027_forecast,Low_p10,High_p90,Change_pct,MAE_best_pct,MAE_naive_pct
+Nifty Pharma,actual index,26079,drift,29613,22895,39014,13.6,12.2,13.2
+Nifty Defence,constituent proxy,100,drift,132,83,205,31.8,22.8,26.6

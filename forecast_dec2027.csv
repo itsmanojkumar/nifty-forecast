@@ -1,0 +1,13 @@
+Index,Data,Current,Best_model,Dec2027_forecast,Low_p10,High_p90,Change_pct,MAE_best_pct,MAE_naive_pct
+Nifty 50,actual index,23146,arima,25993,20665,32239,12.3,8.4,10.0
+Nifty Bank,actual index,55844,arima,70279,50157,95616,25.8,8.6,12.3
+Nifty IT,actual index,31924,rw,31924,23305,44075,0.0,15.3,15.3
+Nifty Pharma,actual index,25782,drift,29251,22614,38552,13.5,12.2,13.2
+Nifty Metal,constituent proxy,12133,arima,14143,9333,20914,16.6,20.2,23.0
+Nifty Auto,constituent proxy,25768,ets,28957,21165,39093,12.4,12.9,15.5
+Nifty FMCG,constituent proxy,44616,ets,46623,37510,58214,4.5,8.0,9.2
+Nifty Energy,constituent proxy,36191,drift,40961,30792,54980,13.2,15.6,17.1
+Nifty Realty,constituent proxy,826,arima,950,612,1445,15.0,23.6,24.2
+Nifty PSU Bank,constituent proxy,8095,rw,8095,4845,13699,-0.0,26.8,26.8
+Nifty Media,constituent proxy,1648,rw,1648,1114,2412,-0.0,18.7,18.7
+Nifty Infra,constituent proxy,8726,arima,9913,7515,12937,13.6,13.0,14.8
