@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nifty Metal Forecast</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--tx:#0f172a;--mut:#64748b;--bd:#e2e8f0;--acc:#0e7490;--acc2:#f59e0b;--up:#15803d;--dn:#b91c1c;--hero:linear-gradient(135deg,#0f172a,#164e63)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1118;--card:#131c27;--tx:#e6edf5;--mut:#8da0b5;--bd:#22303f;--acc:#38bdf8;--acc2:#fbbf24;--up:#4ade80;--dn:#f87171;--hero:linear-gradient(135deg,#0b1118,#12384a)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+.hero{background:var(--hero);color:#fff;padding:28px 16px 70px}.w{max-width:1080px;margin:0 auto}
+.hero h1{margin:0;font-size:26px;letter-spacing:-.3px}.hero p{margin:4px 0 0;color:#b6c8d8;max-width:640px}.tag{display:inline-block;font-size:12px;padding:2px 10px;border:1px solid #ffffff55;border-radius:99px;margin-bottom:10px;color:#d6e4f0}
+main{max-width:1080px;margin:-48px auto 0;padding:0 16px 48px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;box-shadow:0 4px 18px #0f172a14}
+.k small{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px}.k b{display:block;font-size:26px;letter-spacing:-.5px}.k span{font-size:13px;color:var(--mut)}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 2px;font-size:17px}.card .d{color:var(--mut);font-size:13px;margin:0 0 12px}
+.bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.bar button{border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:8px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.bar button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.box{position:relative;height:360px}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:760px){.two{grid-template-columns:1fr}.box{height:300px}}
+.pick{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.pick input{flex:1;min-width:200px;accent-color:var(--acc)}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}.res div{background:var(--bg);border-radius:10px;padding:10px 12px}.res small{display:block;color:var(--mut);font-size:12px}.res b{font-size:20px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;padding:8px;border-bottom:1px solid var(--bd)}th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px;text-transform:uppercase}
+.meter{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;min-width:90px}.meter i{display:block;height:100%;background:var(--acc)}
+.warn{font-size:12.5px;color:var(--mut);border-left:3px solid var(--acc2);padding-left:10px;margin-top:10px}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:8px 16px 32px}footer a{color:var(--acc)}
+</style></head><body>
+<div class="hero"><div class="w"><span class="tag">Official NSE index data · Nov 2015 – Oct 2026</span><h1>Nifty Metal Forecast</h1><p>Where the Nifty Metal index may be by Dec 2027, and how much to trust that number.</p></div></div>
+<main>
+<div class="kpis" id="kpis"></div>
+<div class="card"><h2>Index history and forecast</h2><p class="d">Grey is the actual index. The blue line is the forecast and the shaded area is the 80% range.</p>
+<div class="bar" id="rng"></div><div class="box"><canvas id="c"></canvas></div></div>
+<div class="card"><h2>Pick a month</h2><p class="d">Drag to see the forecast for any month up to Dec 2027.</p>
+<div class="pick"><b id="pm" style="min-width:90px"></b><input type="range" id="sl" min="0" step="1"></div><div class="res" id="pr"></div></div>
+<div class="two">
+<div class="card"><h2>How accurate is it?</h2><p class="d">Average error of the forecast, tested month by month over the last 6 years.</p><table id="acc"></table>
+<div class="warn">Direction accuracy looks high because the index rose most of the time. It is not timing skill.</div></div>
+<div class="card"><h2>Models compared (12 months)</h2><p class="d">Lower error is better. The simple trend won; ML models did worse.</p><div class="box" style="height:250px"><canvas id="m"></canvas></div></div></div>
+<div class="card"><h2>Check: forecast made 12 months ago vs. actual</h2><p class="d" id="hn"></p><div class="box" style="height:260px"><canvas id="h"></canvas></div></div>
+<div class="card"><h2>What this means</h2><p style="margin:0 0 8px">The forecast is the long-run upward trend carried forward. Past prices alone could not predict next month's move: Ridge and gradient boosting models scored about the same as guessing on direction. Treat the Dec 2027 number as a central scenario inside a wide range, and expect a typical error of roughly ±17%.</p>
+<p style="margin:0">I also tested adding copper, aluminium, crude, gold, USD/INR, the dollar index, S&amp;P 500, China and Nifty 50. None of them improved the forecast in a walk-forward test, so they are not used.</p></div>
+</main>
+<footer>Statistical exercise, not investment advice. Code and data: <a href="https://github.com/itsmanojkumar/nifty-forecast">github.com/itsmanojkumar/nifty-forecast</a></footer>
+<script>
+const D=__DATA__,css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim(),f0=v=>Math.round(v).toLocaleString("en-IN"),pc=v=>(v>0?"+":"")+v.toFixed(1)+"%";
+const mon=s=>{const[y,m]=s.split("-");return new Date(+y,+m-1).toLocaleString("en",{month:"short",year:"numeric"})};
+const cur=D.current,fin=D.fc[D.fc.length-1];
+document.getElementById("kpis").innerHTML=`<div class="k"><small>Index today</small><b>${f0(cur)}</b><span>as of ${D.asof}</span></div>
+<div class="k"><small>Dec 2027 forecast</small><b>${f0(fin[1])}</b><span class="${fin[1]>=cur?"up":"dn"}">${pc((fin[1]/cur-1)*100)} from today</span></div>
+<div class="k"><small>80% range</small><b>${f0(fin[2])} – ${f0(fin[3])}</b><span>${pc((fin[2]/cur-1)*100)} to ${pc((fin[3]/cur-1)*100)}</span></div>
+<div class="k"><small>12-month accuracy</small><b>≈ ${Math.round(100-D.acc[3].err)}%</b><span>average error ${D.acc[3].err}%</span></div>`;
+let ch,range=5;const tx=()=>css("--mut"),bd=()=>css("--bd"),acc=()=>css("--acc");
+function draw(){const lim=range?new Date(Date.now()-range*365.25*864e5).toISOString().slice(0,7):"";const h=D.hist.filter(x=>x[0]>=lim);ch&&ch.destroy();
+ const n=h.length,L=h[n-1][1],lab=[...h.map(x=>x[0]),...D.fc.map(x=>x[0])],pad=Array(n-1).fill(null);
+ ch=new Chart(c,{type:"line",data:{labels:lab,datasets:[{label:"Actual",data:[...h.map(x=>x[1]),...Array(D.fc.length).fill(null)],borderColor:tx(),borderWidth:1.8,pointRadius:0,tension:.15},
+ {label:"hi",data:[...pad,L,...D.fc.map(x=>x[3])],borderWidth:0,pointRadius:0,fill:"+1",backgroundColor:acc()+"2e"},{label:"lo",data:[...pad,L,...D.fc.map(x=>x[2])],borderWidth:0,pointRadius:0},
+ {label:"Forecast",data:[...pad,L,...D.fc.map(x=>x[1])],borderColor:acc(),borderWidth:2.6,pointRadius:0}]},
+ options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:tx(),filter:i=>i.text!="hi"&&i.text!="lo"}},tooltip:{filter:i=>i.dataset.label!="hi"&&i.dataset.label!="lo"}},scales:{x:{ticks:{color:tx(),maxTicksLimit:9,callback(v){return mon(this.getLabelForValue(v))}},grid:{display:false}},y:{ticks:{color:tx(),callback:v=>f0(v)},grid:{color:bd()}}}}})}
+const rb=document.getElementById("rng");[["1Y",1],["3Y",3],["5Y",5],["All",0]].forEach(([t,v])=>{const b=document.createElement("button");b.textContent=t;b.className=v==range?"on":"";b.onclick=()=>{range=v;[...rb.children].forEach(x=>x.className=x==b?"on":"");draw()};rb.append(b)});draw();
+const sl=document.getElementById("sl");sl.max=D.fc.length-1;sl.value=sl.max;
+function pick(){const f=D.fc[+sl.value];document.getElementById("pm").textContent=mon(f[0]);document.getElementById("pr").innerHTML=
+`<div><small>Forecast</small><b>${f0(f[1])}</b></div><div><small>Change from today</small><b class="${f[1]>=cur?"up":"dn"}">${pc((f[1]/cur-1)*100)}</b></div><div><small>Low (10%)</small><b>${f0(f[2])}</b></div><div><small>High (90%)</small><b>${f0(f[3])}</b></div>`}
+sl.oninput=pick;pick();
+document.getElementById("acc").innerHTML="<tr><th>Horizon</th><th>Avg error</th><th>Accuracy</th><th>Direction</th></tr>"+D.acc.map(a=>`<tr><td>${a.h}</td><td>${a.err}%</td><td><div class="meter"><i style="width:${100-a.err}%"></i></div></td><td>${a.dir}%</td></tr>`).join("");
+new Chart(m,{type:"bar",data:{labels:D.models.map(x=>x[0]),datasets:[{data:D.models.map(x=>x[1]),backgroundColor:D.models.map(x=>x[0].startsWith("Trend")?acc():bd()),borderRadius:6}]},
+ options:{indexAxis:"y",maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx(),callback:v=>v+"%"},grid:{color:bd()}},y:{ticks:{color:tx()},grid:{display:false}}}}});
+const k=D.check;document.getElementById("hn").textContent=`Average error ${k.mape_pct}%, error at month 12 ${pc(k.end_err_pct)}, ${k.inside_band_pct}% of months inside the 80% range. One test window only.`;
+new Chart(h,{type:"line",data:{labels:k.months.map(mon),datasets:[{label:"Actual",data:k.actual,borderColor:tx(),borderWidth:2,pointRadius:2},{label:"Forecast made 12 months ago",data:k.pred,borderColor:acc(),borderDash:[6,4],borderWidth:2,pointRadius:0}]},
+ options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:tx()}}},scales:{x:{ticks:{color:tx()},grid:{display:false}},y:{ticks:{color:tx(),callback:v=>f0(v)},grid:{color:bd()}}}}});
+</script></body></html>
