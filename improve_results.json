@@ -1,0 +1,110 @@
+{
+ "Nifty 50": {
+  "1": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 3.24,
+   "current_err": 3.09,
+   "p_vs_current": 0.3115,
+   "test_cov": 89,
+   "test_width": 13.9,
+   "current_cov": 92,
+   "current_width": 13.9,
+   "test_is": 15.2,
+   "current_is": 14.9
+  },
+  "3": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 5.79,
+   "current_err": 5.31,
+   "p_vs_current": 0.3586,
+   "test_cov": 87,
+   "test_width": 25.6,
+   "current_cov": 96,
+   "current_width": 25.6,
+   "test_is": 25.0,
+   "current_is": 24.4
+  },
+  "6": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 8.06,
+   "current_err": 6.93,
+   "p_vs_current": 0.2366,
+   "test_cov": 92,
+   "test_width": 38.5,
+   "current_cov": 94,
+   "current_width": 38.5,
+   "test_is": 33.9,
+   "current_is": 33.9
+  },
+  "12": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 10.63,
+   "current_err": 8.61,
+   "p_vs_current": 0.1078,
+   "test_cov": 98,
+   "test_width": 60.7,
+   "current_cov": 97,
+   "current_width": 60.7,
+   "test_is": 47.4,
+   "current_is": 47.8
+  }
+ },
+ "Nifty Metal": {
+  "1": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 6.1,
+   "current_err": 6.05,
+   "p_vs_current": 0.8314,
+   "test_cov": 87,
+   "test_width": 26.5,
+   "current_cov": 89,
+   "current_width": 26.5,
+   "test_is": 29.5,
+   "current_is": 29.5
+  },
+  "3": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 10.84,
+   "current_err": 10.31,
+   "p_vs_current": 0.5058,
+   "test_cov": 90,
+   "test_width": 50.7,
+   "current_cov": 90,
+   "current_width": 50.7,
+   "test_is": 53.0,
+   "current_is": 49.7
+  },
+  "6": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 13.95,
+   "current_err": 13.48,
+   "p_vs_current": 0.7813,
+   "test_cov": 91,
+   "test_width": 79.7,
+   "current_cov": 94,
+   "current_width": 79.7,
+   "test_is": 79.3,
+   "current_is": 69.0
+  },
+  "12": {
+   "best": "Trend reversion",
+   "band": "gaussian",
+   "test_err": 17.83,
+   "current_err": 17.4,
+   "p_vs_current": 0.8813,
+   "test_cov": 90,
+   "test_width": 132.7,
+   "current_cov": 95,
+   "current_width": 132.7,
+   "test_is": 104.7,
+   "current_is": 86.9
+  }
+ }
+}

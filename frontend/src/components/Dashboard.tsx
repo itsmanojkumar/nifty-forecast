@@ -1,8 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import data from "@/data/indices.json";
 import { AllData, IndexData, f0, mon, pc } from "@/lib/types";
 import { BandChart, CheckChart, ModelsChart } from "./Charts";
+import PageNav from "./PageNav";
+import { useHashKey } from "@/lib/useHashKey";
 
 const ALL = data as unknown as AllData;
 const KEYS = Object.keys(ALL);
@@ -40,7 +42,8 @@ function LongChart({ d }: { d: IndexData }) {
   const [range, setRange] = useState(5);
   const hist = useMemo(() => {
     if (!range) return d.hist;
-    const lim = new Date(Date.now() - range * 365.25 * 864e5).toISOString().slice(0, 7);
+    const [y, m] = d.hist[d.hist.length - 1][0].split("-");
+    const lim = `${+y - range}-${m}`;
     return d.hist.filter((x) => x[0] >= lim);
   }, [d, range]);
   return (
@@ -55,34 +58,102 @@ function LongChart({ d }: { d: IndexData }) {
   );
 }
 
-function MonthPicker({ d }: { d: IndexData }) {
-  const [i, setI] = useState(d.fc.length - 1);
-  const f = d.fc[i];
+type TF = { id: string; label: string; kind: "day" | "month"; i: number; err?: number };
+const timeframes = (d: IndexData): TF[] => ([
+  { id: "1d", label: "1 day", kind: "day", i: 0 },
+  { id: "1w", label: "1 week", kind: "day", i: 4 },
+  { id: "15d", label: "15 days", kind: "day", i: 14 },
+  { id: "1m", label: "1 month", kind: "month", i: 0, err: d.acc[0]?.err },
+  { id: "3m", label: "3 months", kind: "month", i: 2, err: d.acc[1]?.err },
+  { id: "6m", label: "6 months", kind: "month", i: 5, err: d.acc[2]?.err },
+  { id: "1y", label: "1 year", kind: "month", i: 11, err: d.acc[3]?.err },
+  { id: "end", label: "Dec 2027", kind: "month", i: d.fc.length - 1 },
+] as TF[]).filter((t) => (t.kind === "day" ? t.i < d.short.fc.length : t.i < d.fc.length));
+
+function Timeframes({ d }: { d: IndexData }) {
+  const tfs = timeframes(d);
+  const [id, setId] = useState("15d");
+  const tf = tfs.find((t) => t.id === id) ?? tfs[0];
+  const day = tf.kind === "day";
+  const f = day ? d.short.fc[tf.i] : d.fc[tf.i];
+  const when = day ? `${f[0]} (${tf.i + 1} trading day${tf.i ? "s" : ""})` : mon(f[0]) + " month-end";
+  const chg = (f[1] / d.current - 1) * 100;
+  const stats: [string, string, string][] = [
+    ["Forecast", f0(f[1]), ""],
+    ["Change from today", pc(chg), chg >= 0 ? "text-[var(--up)]" : "text-[var(--dn)]"],
+    ["Low (10%)", f0(f[2]), ""],
+    ["High (90%)", f0(f[3]), ""],
+  ];
   return (
-    <Card title="Pick a month" desc="Drag to see the forecast for any month up to Dec 2027.">
-      <div className="flex flex-wrap items-center gap-3.5">
-        <b className="min-w-[90px]">{mon(f[0])}</b>
-        <input type="range" min={0} max={d.fc.length - 1} value={i} onChange={(e) => setI(+e.target.value)} className="min-w-[200px] flex-1 accent-[var(--acc)]" />
-      </div>
-      <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
-        {[["Forecast", f0(f[1]), ""], ["Change from today", pc((f[1] / d.current - 1) * 100), f[1] >= d.current ? "text-[var(--up)]" : "text-[var(--dn)]"], ["Low (10%)", f0(f[2]), ""], ["High (90%)", f0(f[3]), ""]].map(([l, v, c]) => (
-          <div key={l} className="rounded-xl bg-[var(--bg)] px-3 py-2.5"><small className="block text-xs text-[var(--mut)]">{l}</small><b className={`text-xl ${c}`}>{v}</b></div>
+    <Card title="Forecast by timeframe" desc="Choose how far ahead to look. The range is where the index should land 8 times in 10.">
+      <div role="tablist" aria-label="Timeframe" className="mb-3 flex flex-wrap gap-1.5">
+        {tfs.map((t) => (
+          <button key={t.id} role="tab" aria-selected={t.id === tf.id} onClick={() => setId(t.id)}
+            className={`rounded-lg border px-3 py-1 text-[13px] ${t.id === tf.id ? "border-[var(--acc)] bg-[var(--acc)] text-white" : "border-[var(--bd)] hover:border-[var(--acc)]"}`}>{t.label}</button>
         ))}
+      </div>
+      <p className="m-0 mb-2 text-sm">Target: <b>{when}</b>{tf.err != null && <span className="text-[var(--mut)]"> · past error at this horizon ≈ ±{tf.err}%</span>}</p>
+      <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
+        {stats.map(([l, v, c]) => (
+          <div key={l} className="rounded-xl bg-[var(--bg)] px-3 py-2.5"><small className="block text-xs text-[var(--mut)]">{l}</small><b className={`text-xl tabular-nums ${c}`}>{v}</b></div>
+        ))}
+      </div>
+      {day
+        ? <BandChart hist={d.short.hist} fc={d.short.fc.slice(0, tf.i + 1)} label={(s) => s} height={280} dots />
+        : <BandChart hist={d.hist.slice(-Math.max(24, tf.i + 13))} fc={d.fc.slice(0, tf.i + 1)} label={mon} height={280} />}
+    </Card>
+  );
+}
+
+function FifteenDay({ d }: { d: IndexData }) {
+  const prev = d.short.hist[d.short.hist.length - 1];
+  return (
+    <Card title="15-day forecast, day by day" desc={`From the close of ${prev[0]} (${f0(prev[1])}). Weekdays only; exchange holidays are not removed yet.`}>
+      {d.short_meta ? (
+        <div className="mb-3 grid gap-2.5 sm:grid-cols-3">
+          <div className="rounded-xl bg-[var(--bg)] px-3 py-2.5"><small className="block text-xs text-[var(--mut)]">Overnight US markets</small>
+            <b className="tabular-nums">S&amp;P 500 {pc(d.short_meta.overnight_pct.spx)} · Nasdaq {pc(d.short_meta.overnight_pct.ndx)}</b></div>
+          <div className="rounded-xl bg-[var(--bg)] px-3 py-2.5"><small className="block text-xs text-[var(--mut)]">Model&apos;s day-1 move ({d.short_meta.made_for})</small>
+            <b className={`tabular-nums ${d.short_meta.day1_return_pct >= 0 ? "text-[var(--up)]" : "text-[var(--dn)]"}`}>{pc(d.short_meta.day1_return_pct)}</b></div>
+          <div className="rounded-xl bg-[var(--bg)] px-3 py-2.5"><small className="block text-xs text-[var(--mut)]">India VIX (sets the range)</small>
+            <b className="tabular-nums">{d.short_meta.india_vix.toFixed(1)}</b></div>
+        </div>
+      ) : null}
+      <p className="m-0 mb-3 text-[12.5px] text-[var(--mut)]">
+        {d.short_meta
+          ? "Day 1 comes from a model of overnight global markets, which cut next-day error by 6.5% in a 2022–26 backtest. Later days add the average daily drift; direction beyond day 1 is close to a coin flip, so read the range."
+          : "The daily direction is close to a coin flip, so read the range, not the line."}
+      </p>
+      <div className="max-h-[420px] overflow-auto">
+        <table className="w-full border-collapse text-sm tabular-nums">
+          <thead className="sticky top-0 bg-[var(--card)]"><tr className="text-xs uppercase text-[var(--mut)]">
+            {["Day", "Date", "Forecast", "Change", "Low (10%)", "High (90%)", "Range width"].map((h, i) => <th key={h} className={`whitespace-nowrap p-2 font-medium ${i > 1 ? "text-right" : "text-left"}`}>{h}</th>)}
+          </tr></thead>
+          <tbody>{d.short.fc.map((f, i) => {
+            const chg = (f[1] / d.current - 1) * 100;
+            return (
+              <tr key={f[0]} className="border-t border-[var(--bd)]">
+                <td className="p-2 text-[var(--mut)]">{i + 1}</td><td className="p-2">{f[0]}</td>
+                <td className="p-2 text-right font-semibold">{f0(f[1])}</td>
+                <td className={`p-2 text-right ${chg >= 0 ? "text-[var(--up)]" : "text-[var(--dn)]"}`}>{pc(chg)}</td>
+                <td className="p-2 text-right">{f0(f[2])}</td><td className="p-2 text-right">{f0(f[3])}</td>
+                <td className="p-2 text-right text-[var(--mut)]">±{(((f[3] - f[2]) / 2 / f[1]) * 100).toFixed(1)}%</td>
+              </tr>);
+          })}</tbody>
+        </table>
       </div>
     </Card>
   );
 }
 
 export default function Dashboard() {
-  const [key, setKey] = useState(KEYS[0]);
-  useEffect(() => { const h = window.location.hash.slice(1); if (ALL[h]) setKey(h); }, []);
+  const [key, pick] = useHashKey(KEYS);
   const d = ALL[key];
-  const S = d.short, e = S.fc[S.fc.length - 1];
-  const pick = (k: string) => { setKey(k); window.history.replaceState(null, "", "#" + k); };
   return (
     <>
       <header className="bg-[image:var(--hero)] px-4 pb-[70px] pt-7 text-white">
         <div className="mx-auto max-w-[1080px]">
+          <PageNav active="/forecast" indexKey={key} />
           <div className="mb-3.5 inline-flex gap-0.5 rounded-[10px] bg-white/10 p-[3px]">
             {KEYS.map((k) => (
               <button key={k} onClick={() => pick(k)} className={`rounded-lg px-4 py-1.5 text-sm ${k === key ? "bg-white font-semibold text-slate-900" : "text-[#d6e4f0]"}`}>{ALL[k].name}</button>
@@ -95,14 +166,9 @@ export default function Dashboard() {
       </header>
       <main key={key} className="mx-auto -mt-12 max-w-[1080px] px-4 pb-12">
         <Kpis d={d} />
+        <Timeframes d={d} />
         <LongChart d={d} />
-        <Card title="Next 15 trading days" desc="Daily forecast from the last 30 closes. Weekdays only; exchange holidays are not removed. The range widens each day.">
-          <BandChart hist={S.hist} fc={S.fc} label={(s) => s} height={300} dots />
-          <p className="mt-2.5 border-l-[3px] border-[var(--acc2)] pl-2.5 text-[12.5px] text-[var(--mut)]">
-            Tomorrow ({S.fc[0][0]}): {f0(S.fc[0][1])} ({f0(S.fc[0][2])} – {f0(S.fc[0][3])}). In 15 days ({e[0]}): {f0(e[1])} ({f0(e[2])} – {f0(e[3])}). Direction is close to a coin flip.
-          </p>
-        </Card>
-        <MonthPicker d={d} />
+        <FifteenDay d={d} />
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="How accurate is it?" desc="Average error of the forecast, tested month by month over the last 6 years.">
             <table className="w-full border-collapse text-sm">

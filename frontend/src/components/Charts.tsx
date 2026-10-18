@@ -8,14 +8,14 @@ import { Band, IndexData, f0, mon } from "@/lib/types";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Filler, Tooltip, Legend);
 
-type Theme = { tx: string; bd: string; acc: string };
+export type Theme = { tx: string; bd: string; acc: string; dn: string };
 const read = (): Theme => {
   const s = getComputedStyle(document.documentElement);
   const g = (n: string) => s.getPropertyValue(n).trim();
-  return { tx: g("--mut"), bd: g("--bd"), acc: g("--acc") };
+  return { tx: g("--mut"), bd: g("--bd"), acc: g("--acc"), dn: g("--dn") };
 };
-function useTheme(): Theme {
-  const [t, setT] = useState<Theme>({ tx: "#64748b", bd: "#e2e8f0", acc: "#0e7490" });
+export function useTheme(): Theme {
+  const [t, setT] = useState<Theme>({ tx: "#64748b", bd: "#e2e8f0", acc: "#0e7490", dn: "#b91c1c" });
   useEffect(() => {
     const apply = () => setT(read());
     apply();
