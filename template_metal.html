@@ -29,6 +29,7 @@ footer{text-align:center;color:var(--mut);font-size:12.5px;padding:8px 16px 32px
 <div class="kpis" id="kpis"></div>
 <div class="card"><h2>Index history and forecast</h2><p class="d">Grey is the actual index. The blue line is the forecast and the shaded area is the 80% range.</p>
 <div class="bar" id="rng"></div><div class="box"><canvas id="c"></canvas></div></div>
+<div class="card"><h2>Next 15 trading days</h2><p class="d">Daily forecast from the last 30 closes. Weekdays only; exchange holidays are not removed. The range widens each day.</p><div class="box" style="height:300px"><canvas id="s"></canvas></div><p class="warn" id="sn"></p></div>
 <div class="card"><h2>Pick a month</h2><p class="d">Drag to see the forecast for any month up to Dec 2027.</p>
 <div class="pick"><b id="pm" style="min-width:90px"></b><input type="range" id="sl" min="0" step="1"></div><div class="res" id="pr"></div></div>
 <div class="two">
@@ -63,6 +64,12 @@ sl.oninput=pick;pick();
 document.getElementById("acc").innerHTML="<tr><th>Horizon</th><th>Avg error</th><th>Accuracy</th><th>Direction</th></tr>"+D.acc.map(a=>`<tr><td>${a.h}</td><td>${a.err}%</td><td><div class="meter"><i style="width:${100-a.err}%"></i></div></td><td>${a.dir}%</td></tr>`).join("");
 new Chart(m,{type:"bar",data:{labels:D.models.map(x=>x[0]),datasets:[{data:D.models.map(x=>x[1]),backgroundColor:D.models.map(x=>x[0].startsWith("Trend")?acc():bd()),borderRadius:6}]},
  options:{indexAxis:"y",maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tx(),callback:v=>v+"%"},grid:{color:bd()}},y:{ticks:{color:tx()},grid:{display:false}}}}});
+{const S=D.short,n=S.hist.length,L=S.hist[n-1][1],pad=Array(n-1).fill(null),e=S.fc[S.fc.length-1];
+new Chart(s,{type:"line",data:{labels:[...S.hist.map(x=>x[0]),...S.fc.map(x=>x[0])],datasets:[{label:"Actual",data:[...S.hist.map(x=>x[1]),...Array(S.fc.length).fill(null)],borderColor:tx(),borderWidth:2,pointRadius:2},
+{label:"hi",data:[...pad,L,...S.fc.map(x=>x[3])],borderWidth:0,pointRadius:0,fill:"+1",backgroundColor:acc()+"2e"},{label:"lo",data:[...pad,L,...S.fc.map(x=>x[2])],borderWidth:0,pointRadius:0},
+{label:"Forecast",data:[...pad,L,...S.fc.map(x=>x[1])],borderColor:acc(),borderWidth:2.5,pointRadius:2}]},
+options:{maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:tx(),filter:i=>i.text!="hi"&&i.text!="lo"}},tooltip:{filter:i=>i.dataset.label!="hi"&&i.dataset.label!="lo"}},scales:{x:{ticks:{color:tx(),maxTicksLimit:10},grid:{display:false}},y:{ticks:{color:tx(),callback:v=>f0(v)},grid:{color:bd()}}}}});
+document.getElementById("sn").textContent=`Tomorrow (${S.fc[0][0]}): ${f0(S.fc[0][1])} (${f0(S.fc[0][2])} – ${f0(S.fc[0][3])}). In 15 days (${e[0]}): ${f0(e[1])} (${f0(e[2])} – ${f0(e[3])}). Direction is close to a coin flip.`}
 const k=D.check;document.getElementById("hn").textContent=`Average error ${k.mape_pct}%, error at month 12 ${pc(k.end_err_pct)}, ${k.inside_band_pct}% of months inside the 80% range. One test window only.`;
 new Chart(h,{type:"line",data:{labels:k.months.map(mon),datasets:[{label:"Actual",data:k.actual,borderColor:tx(),borderWidth:2,pointRadius:2},{label:"Forecast made 12 months ago",data:k.pred,borderColor:acc(),borderDash:[6,4],borderWidth:2,pointRadius:0}]},
  options:{maintainAspectRatio:false,plugins:{legend:{labels:{color:tx()}}},scales:{x:{ticks:{color:tx()},grid:{display:false}},y:{ticks:{color:tx(),callback:v=>f0(v)},grid:{color:bd()}}}}});
