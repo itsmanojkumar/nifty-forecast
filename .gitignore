@@ -2,3 +2,7 @@ __pycache__/
 data/raw/
 data/*.log
 *.before_*.json
+mlflow.db
+mlruns/
+mlartifacts/
+.pytest_cache/
